@@ -16,6 +16,9 @@ gConfig.getHomeID = false;
 //
 window.onload = function(){
 	gameModule();
+};
+//---------------------------------
+var socketModule = function(){
 	//
 	//socket = io({'reconnection':false,'force new connection': true});
 	//socket = io.connect('http://localhost:8080/',{'reconnection':false,'force new connection': true});
@@ -68,7 +71,9 @@ window.onload = function(){
 		game.gameScene.mssLb.text = "Connection errors";
 		game.gameScene.mssLb.opacity = 1;
 	});
-};
+}
+
+
 
 //---------------------------------
 var gameModule = function(){
@@ -104,6 +109,7 @@ var lightsSensorLbValue = fireSensorLbValue = null;
 	game.preload(IMG_BG,IMG_BG2,IMG_L1,IMG_L2,IMG_L3,IMG_L4,IMG_L5,IMG_BT1,IMG_LBT,IMG_FBT,IMG_FIRE);
     game.onload = function() {
 		gameFun.CreateGameScene();
+		socketModule();
     };
     game.start();
 	//
