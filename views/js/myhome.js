@@ -18,8 +18,8 @@ window.onload = function(){
 	gameModule();
 	//
 	//socket = io({'reconnection':false,'force new connection': true});
-	socket = io.connect('http://localhost:8080/',{'reconnection':false,'force new connection': true});
-	//socket = io.connect('http://smart-home-demo-a1.0ec9.hackathon.openshiftapps.com/',{'reconnection':false,'force new connection': true});
+	//socket = io.connect('http://localhost:8080/',{'reconnection':false,'force new connection': true});
+	socket = io.connect('http://smart-home-demo-a1.0ec9.hackathon.openshiftapps.com/',{'reconnection':false,'force new connection': true});
 	socket.on('connect', function(s){console.log("S-connect");
 		socket.removeEventListener('connect');
 		socket.emit('homeRegister', homeStatus);
