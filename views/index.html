@@ -1,0 +1,345 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+<meta name="description" content="Html5 games"/>
+	<title>Home Control</title>
+    <link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+	<script type="text/javascript" src="js/socket.js"></script>
+    <style>
+        div.ui-slider-switch {
+            position: absolute !important;
+            right: 10px !important;
+        }
+        div.ui-flipswitch {
+            position: absolute !important;
+            right: 10px !important;
+        }
+    </style>
+</head>
+<body>
+    <div data-role="page" data-theme="b">
+		<div class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-home" style="background-color:#1d1d1d; cursor:default; padding-left:1em;">Home Control</div>
+        
+        <fieldset data-role="controlgroup">
+            <input name="radio-home" id="radio-home1" value="1" checked="checked" type="radio">
+            <label for="radio-home1">At home</label>
+            <input name="radio-home" id="radio-home2" value="2" type="radio">
+            <label for="radio-home2">Go out</label>
+        </fieldset>
+        <ul data-role="listview" data-inset="true">
+            <li><img src="assets/icon1.png" alt="France" class="ui-li-icon ui-corner-none">Room lights 1
+                <select name="flip-Roomlights" id="roomLights1" data-role="slider" data-mini="true">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </li>
+            <li><img src="assets/icon1.png" alt="Germany" class="ui-li-icon">Room lights 2
+                <select name="flip-Roomlights" id="roomLights2" data-role="slider" data-mini="true">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </li>
+            <li><img src="assets/icon1.png" alt="Great Britain" class="ui-li-icon">Room lights 3
+                <select name="flip-Roomlights" id="roomLights3" data-role="slider" data-mini="true">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </li>
+            <li><img src="assets/icon1.png" alt="Finland" class="ui-li-icon">Room lights 4
+                <select name="flip-Roomlights" id="roomLights4" data-role="slider" data-mini="true">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </li>
+        </ul>
+        
+        <fieldset data-role="controlgroup">
+            <label for="lightSensor">Turn on the light sensor</label>
+            <input name="checkbox-lightSensor" id="lightSensor" checked="true" type="checkbox">
+            <ul data-role="listview" data-inset="true">
+                <li><img src="assets/icon1.png" alt="France" class="ui-li-icon ui-corner-none">Outdoor lights
+                    <select name="flip-Outdoorlights" id="outdoorLights" data-role="slider" data-mini="true">
+                        <option value="off">Off</option>
+                        <option value="on">On</option>
+                    </select>
+                </li>
+            </ul>
+        </fieldset>
+        
+        <fieldset data-role="controlgroup">
+            <label for="fireSensor">Turn on the fire sensor</label>
+            <input name="checkbox-fireSensor" id="fireSensor" checked="true" type="checkbox">
+        </fieldset>
+    	<div style="padding:10px; clear:both;">&nbsp;</div>
+        <!--<a href="#popupDialog" data-rel="popup" data-position-to="window" data-transition="pop" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-delete ui-btn-icon-left ui-btn-b">Delete page...</a>-->
+        <div data-role="popup" id="popupDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" data-close-btn="right" style="max-width:320px;">
+            <div data-role="header" data-theme="a">
+            <h1>Warning!</h1>
+            </div>
+            <div role="main" class="ui-content">
+            	<img src="assets/fire.png" width="60" style="float:left; margin-right:10px;">
+                <h3 class="ui-title">Warning discovered fire!!!</h3>
+            	<p>Be careful.</p>
+                <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Close</a>
+            </div>
+        </div>
+        
+        
+        <!--<a href="#popupLogin" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-check ui-btn-icon-left ui-btn-a" data-transition="pop">Connect to your home!</a>-->
+        <div data-role="popup" id="popupLogin" data-theme="b" class="ui-corner-all">
+                <div style="padding:10px 20px;">
+                    <h3>Connect to your home!</h3>
+                    <label for="un" class="ui-hidden-accessible">Home ID:</label>
+                    <input name="user" id="un" value="" placeholder="Home ID" data-theme="b" type="text">
+                    <button type="button" id="homeEnter" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Enter</button>
+                </div>
+        </div>
+    
+    </div>
+    
+
+    <div id="mask" style="width:100%; height:100%; z-index:1000; position:fixed; background-color:#000; opacity:0.5;">&nbsp;</div>
+    <div id="mss" style="width:100%; text-align:center;z-index:1100; color:#F00; position:fixed; bottom:10px;">Connecting...</div>
+    <script>
+		var deviceConnected = false;
+		var homeStatus = {atHome:true, roomLights1:false, roomLights2:false, roomLights3:false, roomLights4:false, lightSensor:true, lightSensorValue:false, outdoorLights:false, fireSensor:true, hasFire:false};
+		var lightsAction = ["roomLights1", "roomLights2", "roomLights3", "roomLights4", "outdoorLights"];
+		//
+		function checkAtHome(touch){
+			if(homeStatus.atHome == true){
+				if(!touch)$("input[id='radio-home1']").prop("checked",true);
+				for(var i = 1;i<=4;i++){
+					$("select[id=roomLights"+i+"]").parent().css("color","white");
+				}
+			} else{
+				if(!touch)$("input[id='radio-home2']").prop("checked",true);
+				for(var i = 1;i<=4;i++){
+					var rl = $("select[id=roomLights"+i+"]").prop('value');
+					if(rl == "on"){
+						$("select[id=roomLights"+i+"]").parent().css("color","red");
+					}
+				}
+			}
+			if(!touch)$("input[type='radio']").checkboxradio("refresh");
+		}
+		//
+		function syncLights(){
+			var lightsStatus = {"roomLights1":homeStatus.roomLights1,"roomLights2":homeStatus.roomLights2,"roomLights3":homeStatus.roomLights3,"roomLights4":homeStatus.roomLights4};
+			for(var i in lightsStatus){
+				var slider = $("select[id="+i+"]");
+				if(lightsStatus[i]){
+					slider.val("on").slider('refresh');
+					$("img:first", slider.parent()).attr("src","assets/icon2.png");
+				} else{
+					slider.val("off").slider('refresh');
+					$("img:first", slider.parent()).attr("src","assets/icon1.png");
+				}
+			}
+		}
+		//
+		function checkLightSensor(){
+			if(homeStatus.lightSensor){
+				$("input[name='checkbox-lightSensor']").prop("checked",true).checkboxradio("refresh");
+				$("select[name='flip-Outdoorlights']").slider('disable');
+			} else{
+				$("input[name='checkbox-lightSensor']").prop("checked",false).checkboxradio("refresh");
+				$("select[name='flip-Outdoorlights']").slider('enable');
+			}
+		}
+		//
+		function syncOutdoorLights(){
+			if(homeStatus.outdoorLights){
+				$("select[name='flip-Outdoorlights']").val("on").slider('refresh');
+				$("img:first", $("select[id=outdoorLights]").parent()).attr("src","assets/icon2.png");
+			} else{
+				$("select[name='flip-Outdoorlights']").val("off").slider('refresh');
+				$("img:first", $("select[id=outdoorLights]").parent()).attr("src","assets/icon1.png");
+			}
+		}
+		//
+		function checkFireSensor(){
+			if(homeStatus.fireSensor){
+				$("input[name='checkbox-fireSensor']").prop("checked",true).checkboxradio("refresh");
+				//
+				if(homeStatus.hasFire){
+					$("#popupDialog").popup("open");
+				}
+			} else{
+				$("input[name='checkbox-fireSensor']").prop("checked",false).checkboxradio("refresh");
+			}
+		}
+		//
+		function syncStatus(){
+			syncLights();
+			checkAtHome();
+			checkLightSensor();
+			syncOutdoorLights();
+			checkFireSensor();
+		}
+		
+		//------------------------------------------
+		//
+		$("#homeEnter").bind( "click", function(event, ui) {
+			var homeID = $("#un").prop("value");
+			if(!homeID){
+				alert("Please enter Home ID");
+			} else{
+				if(homeID.length < 12 || homeID.length > 50){
+					alert("Home ID mismatch!");
+				} else{
+					$("#popupLogin").hide();
+					socket.emit('deviceRegister', homeID);
+				}
+			}
+		});
+		$("#popupLogin").on({
+			popupbeforeposition: function () {
+				$('.ui-popup-screen').off();
+			}
+		});
+		//
+		$("input[type='radio']").bind( "change", function(event, ui) {
+			var value = (this.value==1)? true : false;//typeof == string
+			if(homeStatus.atHome == value)return;
+			homeStatus.atHome = value;
+			checkAtHome(true);
+			sendActionDeviceToServer("atHome", homeStatus.atHome);
+		});
+		//
+		$("select[name='flip-Roomlights']").bind( "change", function(event, ui) {
+			if(this.value == "on"){
+				homeStatus[this.id] = true;
+				if(!homeStatus.atHome)$(this).parent().css("color","red");
+			} else{
+				homeStatus[this.id] = false;
+				if(!homeStatus.atHome)$(this).parent().css("color","white");
+			}
+			sendActionDeviceToServer(this.id, homeStatus[this.id]);
+		});
+		//
+		$("input[name='checkbox-lightSensor']").bind( "change", function(event, ui) {
+			if(homeStatus.lightSensor == this.checked)return;
+			homeStatus.lightSensor = this.checked;
+			if(this.checked){
+				$("select[name='flip-Outdoorlights']").slider('disable').slider('refresh');
+			} else{
+				$("select[name='flip-Outdoorlights']").slider('enable').slider('refresh');
+			}
+			sendActionDeviceToServer("lightSensor", homeStatus.lightSensor);
+		});
+		//
+		$( "select[name='flip-Outdoorlights']" ).bind( "change", function(event, ui) {
+			homeStatus.outdoorLights = this.value == "on"? true : false;
+			sendActionDeviceToServer("outdoorLights", homeStatus.outdoorLights);
+		});
+		//
+		$("input[name='checkbox-fireSensor']").bind( "change", function(event, ui) {
+			homeStatus.fireSensor = this.checked;
+			sendActionDeviceToServer("fireSensor", homeStatus.fireSensor);
+		});
+		
+		//--------------------------------------------
+		//
+		function syncData(data){
+			for(var i in data){
+				var value = data[i] == true? true : false;
+				if(homeStatus.hasOwnProperty(i))homeStatus[i] = value;
+			}
+		}
+		//
+		function sendActionDeviceToServer(action, value){
+			if(!deviceConnected)returm;
+			console.log("sendActionDeviceToServer: "+action+"="+value);
+			socket.emit('action-DeviceToServer', {"action":action, "value":value});
+		}
+		//
+		$(document).ready(function() {
+			$(document).on("pageshow", "#registerPage", function() {alert(9)
+			});
+			
+			//
+			//socket = io({'reconnection':false,'force new connection': true});
+			socket = io.connect('http://localhost:8080/',{'reconnection':false,'force new connection': true});
+			//socket = io.connect('http://smart-home-demo-a1.0ec9.hackathon.openshiftapps.com/',{'reconnection':false,'force new connection': true});
+			socket.on('connect', function(){console.log("S-connect");
+				socket.removeEventListener('connect');
+				deviceConnected = true;
+				$("#popupLogin").popup("open");
+				//socket.emit('deviceRegister');
+			});
+			//
+			socket.on('deviceJoinHomeError', function(data){
+				$("#popupLogin").show();
+				alert("Home ID mismatch!");
+			});
+			//
+			socket.on('homeStatus-ServerToDevice', function(data){
+				console.log("homeStatus-ServerToDevice:"+JSON.stringify(data));
+				syncData(data);
+				if(data.homeRegistered){
+					syncStatus()
+					$("#mask").hide();
+					$("#mss").hide();
+				} else{
+					$("#mss").html("My home is not connected");
+					$("#mask").show();
+					$("#mss").show();
+				}
+				//
+				$("#popupLogin").popup("close");
+			});
+			//
+			socket.on('action-ServerToDevice', function(data){
+				console.log("action-ServerToDevice: "+JSON.stringify(data));
+				if(!homeStatus.hasOwnProperty(data.action))return;
+				homeStatus[data.action] = data.value;
+				//
+				if(data.action == "outdoorLights"){
+					syncOutdoorLights();
+				} else if(data.action == "hasFire"){
+					if(!homeStatus.fireSensor)return;
+					if(homeStatus.hasFire){
+						$("#popupDialog").popup("open");
+					} else{
+						//no fire
+					}
+				}
+			});
+			//
+			socket.on('callback-ServerToDevice', function(data){
+				console.log("callback-ServerToDevice: "+JSON.stringify(data));
+				if(!homeStatus.hasOwnProperty(data.action))return;
+				//
+				if(lightsAction.indexOf(data.action) != -1){
+					if(data.value){
+						$("img:first", $("select[id="+data.action+"]").parent()).attr("src","assets/icon2.png");
+					} else{
+						$("img:first", $("select[id="+data.action+"]").parent()).attr("src","assets/icon1.png");
+					}
+					var newValue = data.value? "on" : "off";
+					if(newValue != $("select[id="+data.action+"]").prop('value')){
+						$("select[id="+data.action+"]").val(newValue).slider('refresh');
+					}
+				} else if(data.action == "lightSensor" || data.action == "fireSensor"){
+					if(homeStatus[data.action] != data.value)$("input[name='checkbox-"+data.action+"']").prop("checked",data.value? true : false).checkboxradio("refresh");
+					if(data.action == "lightSensor"){
+						$("select[name='flip-Outdoorlights']").slider(data.value? 'disable' : 'enable').slider('refresh');
+					}
+				}
+				homeStatus[data.action] = data.value;
+			});
+			//
+			socket.on('disconnect', function(){
+				console.log('disconnect');
+				deviceConnected = false;
+				$("#mss").html("Connection errors");
+				$("#mask").show();
+				$("#mss").show();
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-ex",
+  "version": "0.0.1",
+  "description": "Node.js Smart Home app for OpenShift 3",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.13.4"
+  },
+  "engine": {
+    "node": "*",
+    "npm": "*"
+  },
+  "scripts": {
+    "start": "node server.js",
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gnsoft/smart-home-demo-with-openshift.git"
+  },
+  "author": "GnSoft <mobileteamdeveloper@gmail.com>",
+  "license": "",
+  "homepage": "http://smart-home-a1.0ec9.hackathon.openshiftapps.com/"
+}
