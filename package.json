@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "test": "IP=0.0.0.0 PORT=3030 mocha --timeout 5000 tests/*_test.js"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,8 @@
   },
   "author": "GnSoft <mobileteamdeveloper@gmail.com>",
   "license": "",
+  "bugs": {
+    "url": ""
+  },
   "homepage": "http://smart-home-a1.0ec9.hackathon.openshiftapps.com/"
 }
